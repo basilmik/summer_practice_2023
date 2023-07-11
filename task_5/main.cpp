@@ -1,160 +1,145 @@
 #include "stdio.h"
-#include <algorithm>
-#include <cstddef>
-#include <iterator>
-#include <memory>
+#include "merge.h"
 
-//void mcopy(int* _arr)
-//{
-//
-//}
-//
-//
-//
-//void merge_sort(int* arr, int size)
-//{
-//	if (size > 1)
-//	{
-//		int left_size = size / 2;
-//		int right_size = size - left_size;
-//
-//		merge_sort(&arr[0], left_size);
-//		merge_sort(&arr[left_size], right_size);
-//
-//		int lidx = 0, ridx = left_size, idx = 0;
-//		int* tmp_arr = new int[size];
-//
-//		while (lidx < left_size || ridx < size)
-//		{
-//			if (arr[lidx] < arr[ridx])
-//			{
-//				tmp_arr[idx++] = std::move(arr[lidx]);
-//				lidx++;
-//			}
-//			else
-//			{
-//				tmp_arr[idx++] = arr[ridx];
-//				ridx++;
-//			}
-//
-//			if (lidx == left_size)
-//			{
-//				// copy ridx, size, idx
-//				break;
-//			}
-//			if (ridx == size)
-//			{
-//				// copy
-//				break;
-//			}
-//
-//			// copy tmp_arr->arr
-//
-//
-//
-//
-//		}
-//
-//	}
-//
-//
-//}
+#include "string.h"
+
+#include "mysql_connection.h"
+#include <cppconn/driver.h>
+#include <cppconn/exception.h>
+#include <cppconn/prepared_statement.h>
 
 
-void mmerge(int arr[], int left, int mid, int right)
+
+
+
+
+void read_arr_from_db(char* db_name, char* table_name)
 {
-	int it1 = 0, it2 = 0;
-	int size = right - left;
-	int* res = new int[size];
-	for (int i = 0; i < size; i++)
-		res[i] = 0;
-	
-	printf("res: \n");
-	for (int i = 0; i < size; i++)
+	const char* server = "tcp://127.0.0.1:3306";
+	const char* username = "root";
+	const char* password = "11323";
+
+	sql::Driver* driver;
+	sql::Connection* con;
+	sql::Statement* stmt;
+	//sql::PreparedStatement* pstmt;
+
+
+	try
 	{
-		printf("%d ", res[i]);
+		driver = get_driver_instance();
+		con = driver->connect(server, username, password);
+	}
+	catch (sql::SQLException e)
+	{
+		printf("Could not connect to server. Error message: %s", e.what());
+		system("pause");
+		exit(1);
+	}
+	try
+	{
+		con->setSchema(db_name);
+	}
+	catch (sql::SQLException e)
+	{
+		printf("Could not connect to database. Error message: %s", e.what());
+		exit(1);
 	}
 
-	while (left + it1 < mid && mid + it2 < right)
+	stmt = con->createStatement();
+
+
+	//char st[256] = { 0 };
+
+	//sprintf_s(st, "SELECT min(id) FROM %s WHERE val < 0", table_name);
+
+
+	sql::ResultSet* res;
+
+	try
 	{
-		if (arr[left + it1] < arr[mid + it2])
-		{
-			res[it1 + it2] = arr[left + it1];
-			it1++;
-		}
+		res = stmt->executeQuery("SELECT min(id) FROM origin WHERE val < 0");
+	}
+	catch (sql::SQLException e)
+	{
+		printf("Error message: %s", e.what());
+		exit(1);
+	}
+	res->next();
+	int dev_idx = res->getInt(1);
+	printf("id %d\n", dev_idx);
+
+
+
+	try
+	{
+		res = stmt->executeQuery("SELECT COUNT(*) FROM origin");
+	}
+	catch (sql::SQLException e)
+	{
+		printf("Error message: %s", e.what());
+		exit(1);
+	}
+	res->next();
+	int all_size = res->getInt(1);
+	printf("all_size %d\n", all_size);
+	int size1 = dev_idx -1;
+	int size2 = all_size - dev_idx;
+
+	int* arr1 = new int[size1];
+	int* arr2 = new int[size2];
+
+	char st[256] = { 0 };
+	sprintf_s(st, "SELECT val FROM origin WHERE id!=%d", dev_idx);
+
+	try
+	{
+		res = stmt->executeQuery(st);
+	}
+	catch (sql::SQLException e)
+	{
+		printf("Error message: %s", e.what());
+		exit(1);
+	}
+	int idx = 1;
+
+	while (res->next())
+	{
+		printf("%d ", idx);
+		int val = res->getInt(1);
+		printf(" = %d\n", val);
+		if (idx < dev_idx)
+			arr1[idx - 1] = val;
 		else
-		{
-			res[it1 + it2] = arr[mid + it2];
-			it2++;
-		}
+			arr2[idx - 1 - size1] = val;
+
+		idx++;
 	}
 
-	printf("res: \n");
-	for (int i = 0; i < size; i++)
+	printf("arr1: ");
+	for (int i = 0; i < size1; i++)
 	{
-		printf("%d ", res[i]);
+		printf("%d ", arr1[i]);
 	}
-
-	while (left + it1 < mid)
+	printf("\narr2: ");
+	for (int i = 0; i < size2; i++)
 	{
-		res[it1 + it2] = arr[left + it1];
-		it1++;
+		printf("%d ", arr2[i]);
 	}
 
-	printf("res: \n");
-	for (int i = 0; i < size; i++)
-	{
-		printf("%d ", res[i]);
-	}
+	delete con;
 
-	while (mid + it2 < right)
-	{
-		res[it1 + it2] = arr[mid + it2];
-		it2++;
-	}
-
-	printf("res: \n");
-	for (int i = 0; i < size; i++)
-	{
-		printf("%d ", res[i]);
-	}
-
-	for (int i = 0; i < it1 + it2; i++)
-	{
-		arr[left + i] = res[i];
-	}
-	printf("arr: \n");
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d ", arr[i]);
-	}
-
-}
-
-void msort(int* arr, int left, int right)
-{
-
-	if (left + 1 >= right)
-		return;
-
-	int mid = (left + right) / 2;
-	msort(arr, left, mid);
-
-
-	msort(arr, mid, right);
-
-	mmerge(arr, left, mid, right);
-	printf("\n");
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d ", arr[i]);
-	}
 }
 
 
 int main()
 {
 	int arr[] = { 4, 2, 0, 5, 1, 6, 3, 7, 8, 9 };
+	//int* marr;
+
+	read_arr_from_db( (char*)"practice_task_5", (char*)"origin");
+	system("pause");
+
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -164,11 +149,14 @@ int main()
 	printf("\n");
 
 	msort(arr, 0, 10);
+
 	printf("\n");
 	for (int i = 0; i < 10; i++)
 	{
 		printf("%d ", arr[i]);
 	}
+
+
 
 	return 0;
 }
