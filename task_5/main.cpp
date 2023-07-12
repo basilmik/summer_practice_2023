@@ -1,7 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include <conio.h>
-
 
 #include "string.h"
 
@@ -10,6 +8,7 @@
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
 
+#include "../libwinbgi/src/graphics.h"
 
 
 class marr_data
@@ -235,16 +234,18 @@ void read_arr_from_db(marr_data* arrs)
 
 int main()
 {
-	//initwindow(1000, 700);
-	_getch();
-	//closegraph();
-	marr_data * arrs = new marr_data;
+	initwindow(1000, 700);
+	getch();
+	closegraph();
 
-	read_arr_from_db(arrs);
-	arrs->print_arrs();
 
-	arrs->sort_arr_all();
-	arrs->print_arrs();
+	//marr_data * arrs = new marr_data;
+
+	//read_arr_from_db(arrs);
+	//arrs->print_arrs();
+
+	//arrs->sort_arr_all();
+	//arrs->print_arrs();
 
 
 
