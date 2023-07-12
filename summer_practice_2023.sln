@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "task_5", "task_5\task_5.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwinbgi", "libwinbgi\libwinbgi.vcxproj", "{DAF4CC7E-F3CB-43AC-A07B-C5B6B9A4C32C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "task6", "task6\task6.vcxproj", "{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -29,6 +31,14 @@ Global
 		{DAF4CC7E-F3CB-43AC-A07B-C5B6B9A4C32C}.Release|x64.ActiveCfg = Release|Win32
 		{DAF4CC7E-F3CB-43AC-A07B-C5B6B9A4C32C}.Release|x86.ActiveCfg = Release|Win32
 		{DAF4CC7E-F3CB-43AC-A07B-C5B6B9A4C32C}.Release|x86.Build.0 = Release|Win32
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Debug|x64.ActiveCfg = Debug|x64
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Debug|x64.Build.0 = Debug|x64
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Debug|x86.ActiveCfg = Debug|Win32
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Debug|x86.Build.0 = Debug|Win32
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Release|x64.ActiveCfg = Release|x64
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Release|x64.Build.0 = Release|x64
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Release|x86.ActiveCfg = Release|Win32
+		{4740AE97-A9A3-4817-A00B-5C52BD8DCD0B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
