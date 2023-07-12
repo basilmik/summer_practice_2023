@@ -1,5 +1,7 @@
-#include "stdio.h"
-#include "merge.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <conio.h>
+
 
 #include "string.h"
 
@@ -7,6 +9,7 @@
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
+
 
 
 class marr_data
@@ -17,11 +20,15 @@ public:
 	int size1;
 	int size2;
 	int size_all;
+
 	marr_data()
 	{
 		size1 = -1;
 		size2 = -1;
 		size_all = -1;
+		arr1 = nullptr;
+		arr2 = nullptr;
+		arr_all = nullptr;
 	}
 
 	void mmerge(int arr[], int left, int mid, int right)
@@ -228,8 +235,9 @@ void read_arr_from_db(marr_data* arrs)
 
 int main()
 {
-
-
+	//initwindow(1000, 700);
+	_getch();
+	//closegraph();
 	marr_data * arrs = new marr_data;
 
 	read_arr_from_db(arrs);
