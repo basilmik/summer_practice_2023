@@ -148,9 +148,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="merge.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\libwinbgi\libwinbgi.vcxproj">
       <Project>{daf4cc7e-f3cb-43ac-a07b-c5b6b9a4c32c}</Project>
     </ProjectReference>
