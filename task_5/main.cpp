@@ -9,11 +9,135 @@
 #include <cppconn/prepared_statement.h>
 
 
+class marr_data
+{
+public:
+	int* arr_all; int* arr1; int* arr2;
+
+	int size1;
+	int size2;
+	int size_all;
+	marr_data()
+	{
+		size1 = -1;
+		size2 = -1;
+		size_all = -1;
+	}
+
+	void mmerge(int arr[], int left, int mid, int right)
+	{
+		int it1 = 0, it2 = 0;
+		int size = right - left;
+		int* res = new int[size];
+
+		for (int i = 0; i < size; i++)
+			res[i] = 0;
+
+
+		while (left + it1 < mid && mid + it2 < right)
+		{
+			if (arr[left + it1] < arr[mid + it2])
+			{
+				res[it1 + it2] = arr[left + it1];
+				it1++;
+			}
+			else
+			{
+				res[it1 + it2] = arr[mid + it2];
+				it2++;
+			}
+		}
+
+
+		while (left + it1 < mid)
+		{
+			res[it1 + it2] = arr[left + it1];
+			it1++;
+		}
+
+
+		while (mid + it2 < right)
+		{
+			res[it1 + it2] = arr[mid + it2];
+			it2++;
+		}
+
+		for (int i = 0; i < it1 + it2; i++)
+		{
+			arr[left + i] = res[i];
+		}
+	}
+
+	void msort(int* arr, int left, int right)
+	{
+		if (left + 1 >= right)
+			return;
+
+		int mid = (left + right) / 2;
+		msort(arr, left, mid);
+		msort(arr, mid, right);
+
+		mmerge(arr, left, mid, right);
+	}
+
+	void sort_arr_all()
+	{
+		msort(arr_all, 0, size_all);
+	}
+
+	void print_arrs()
+	{
+		printf("arr1: ");
+		for (int i = 0; i < size1; i++)
+		{
+			printf("%d ", arr1[i]);
+		}
+		printf("\narr2: ");
+		for (int i = 0; i < size2; i++)
+		{
+			printf("%d ", arr2[i]);
+		}
+		printf("\narr_all: ");
+		for (int i = 0; i < size_all; i++)
+		{
+			printf("%d ", arr_all[i]);
+		}
+		printf("\n");
+	}
+
+	void set_size1(int _s)
+	{
+		size1 = _s;
+	}
+	void set_size2(int _s)
+	{
+		size2 = _s;
+	}
+	void set_size_all(int _s)
+	{
+		size_all = _s;
+	}
+
+	int create_by_size()
+	{
+		if (!is_size_valid())
+			return -1;
+
+		arr1 = new int[size1];
+		arr2 = new int[size2];
+		arr_all = new int[size_all];
+		return 0;
+	}
+
+	int is_size_valid()
+	{
+		return (size1 > 0 && size2 > 0 && size_all > 0);
+	}
+};
 
 
 
-
-void read_arr_from_db(char* db_name, char* table_name)
+void read_arr_from_db(marr_data* arrs)
 {
 	const char* server = "tcp://127.0.0.1:3306";
 	const char* username = "root";
@@ -22,74 +146,47 @@ void read_arr_from_db(char* db_name, char* table_name)
 	sql::Driver* driver;
 	sql::Connection* con;
 	sql::Statement* stmt;
-	//sql::PreparedStatement* pstmt;
+	sql::ResultSet* res;
+	sql::ResultSet* res_dev_id;
+	sql::ResultSet* res_size_full;
 
 
 	try
 	{
 		driver = get_driver_instance();
 		con = driver->connect(server, username, password);
+		con->setSchema("practice_task_5");
 	}
 	catch (sql::SQLException e)
 	{
-		printf("Could not connect to server. Error message: %s", e.what());
+		printf("Error message: %s", e.what());
 		system("pause");
 		exit(1);
 	}
-	try
-	{
-		con->setSchema(db_name);
-	}
-	catch (sql::SQLException e)
-	{
-		printf("Could not connect to database. Error message: %s", e.what());
-		exit(1);
-	}
+
 
 	stmt = con->createStatement();
 
 
-	//char st[256] = { 0 };
-
-	//sprintf_s(st, "SELECT min(id) FROM %s WHERE val < 0", table_name);
-
-
-	sql::ResultSet* res;
-
 	try
 	{
-		res = stmt->executeQuery("SELECT min(id) FROM origin WHERE val < 0");
+		res_dev_id = stmt->executeQuery("SELECT min(id) FROM origin WHERE val < 0");
+		res_size_full = stmt->executeQuery("SELECT COUNT(*) FROM origin");
 	}
 	catch (sql::SQLException e)
 	{
 		printf("Error message: %s", e.what());
 		exit(1);
 	}
-	res->next();
-	int dev_idx = res->getInt(1);
-	printf("id %d\n", dev_idx);
+
+	res_dev_id->next();
+	int dev_idx = res_dev_id->getInt(1);
+	
+	res_size_full->next();
+	int size_full = res_size_full->getInt(1);
 
 
-
-	try
-	{
-		res = stmt->executeQuery("SELECT COUNT(*) FROM origin");
-	}
-	catch (sql::SQLException e)
-	{
-		printf("Error message: %s", e.what());
-		exit(1);
-	}
-	res->next();
-	int all_size = res->getInt(1);
-	printf("all_size %d\n", all_size);
-	int size1 = dev_idx -1;
-	int size2 = all_size - dev_idx;
-
-	int* arr1 = new int[size1];
-	int* arr2 = new int[size2];
-
-	char st[256] = { 0 };
+	char st[128] = { 0 };
 	sprintf_s(st, "SELECT val FROM origin WHERE id!=%d", dev_idx);
 
 	try
@@ -101,60 +198,45 @@ void read_arr_from_db(char* db_name, char* table_name)
 		printf("Error message: %s", e.what());
 		exit(1);
 	}
-	int idx = 1;
-
-	while (res->next())
-	{
-		printf("%d ", idx);
-		int val = res->getInt(1);
-		printf(" = %d\n", val);
-		if (idx < dev_idx)
-			arr1[idx - 1] = val;
-		else
-			arr2[idx - 1 - size1] = val;
-
-		idx++;
-	}
-
-	printf("arr1: ");
-	for (int i = 0; i < size1; i++)
-	{
-		printf("%d ", arr1[i]);
-	}
-	printf("\narr2: ");
-	for (int i = 0; i < size2; i++)
-	{
-		printf("%d ", arr2[i]);
-	}
 
 	delete con;
+	delete stmt;
+
+
+	arrs->set_size_all(size_full - 1);
+	arrs->set_size1(dev_idx - 1);
+	arrs->set_size2(arrs->size_all - dev_idx + 1);
+
+	if (arrs->create_by_size() < 0)
+	{
+		printf("error creating arrays, invalid size\n");
+		exit(-1);
+	}
+
+	for(int idx = 0; res->next(); idx++)
+	{
+		arrs->arr_all[idx] = res->getInt(1);
+
+		if (idx  < arrs->size1)
+			arrs->arr1[idx] = arrs->arr_all[idx];
+		else
+			arrs->arr2[idx - arrs->size1] = arrs->arr_all[idx];
+	}
 
 }
 
 
 int main()
 {
-	int arr[] = { 4, 2, 0, 5, 1, 6, 3, 7, 8, 9 };
-	//int* marr;
-
-	read_arr_from_db( (char*)"practice_task_5", (char*)"origin");
-	system("pause");
 
 
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d ", arr[i]);
-	}
+	marr_data * arrs = new marr_data;
 
-	printf("\n");
+	read_arr_from_db(arrs);
+	arrs->print_arrs();
 
-	msort(arr, 0, 10);
-
-	printf("\n");
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d ", arr[i]);
-	}
+	arrs->sort_arr_all();
+	arrs->print_arrs();
 
 
 
