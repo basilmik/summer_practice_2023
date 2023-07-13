@@ -4,7 +4,12 @@
 #include "stdio.h"
 #include <stdlib.h>
 #include <time.h>
+#include <windows.h>
 
+#include "../libwinbgi/src/graphics.h"
+
+
+#define TIME_DELTA 500
 int get_random_in_range(int low, int up)
 {
 	if (up == 0 && low == 0)
@@ -37,10 +42,43 @@ public:
 class stack
 {
 public:
+
+	void draw_stack_elem(int stack_idx, int elem_id, int val, int clr)
+	{
+		char str[128] = { 0 };
+		sprintf(str, "%d", val);
+		setcolor(clr);
+
+		outtextxy(stack_idx * 80, 800 - elem_id * 40, str);
+	}
+
+
+
+	/*void draw_full_stack(int _stack_idx)
+	{
+		elem* tmp = top;
+		int i = 0;
+		while (tmp != nullptr)
+		{
+			draw_stack_elem(_stack_idx, i, tmp->val);
+			tmp = tmp->prev;
+			i++;
+		}
+
+	}*/
+
+
+
 	elem* top;
+	int col;
+	int last_placed;
+
+
 	stack()
 	{
 		top = nullptr;
+		col = 0;
+		last_placed = 0;
 	}
 
 	void push(int v)
@@ -48,6 +86,19 @@ public:
 		elem* n_el = new elem(v);
 		n_el->prev = top;
 		top = n_el;
+		draw_stack_elem(col, last_placed, v, 15);
+		last_placed++;
+		//printf("pushed: %d\n", v);
+	}
+
+	void cover(int _col, int _lp)
+	{
+		setcolor(RED);
+		rectangle(_col * 80, 800 - (_lp - 1) * 40, _col * 80 + 80, 800 - (_lp - 1) * 40 + 20);
+		setfillstyle(LINE_FILL, BLACK);
+		floodfill(_col * 80 + 5, 800 - (_lp - 1) * 40 + 5, RED);
+		setcolor(BLACK);
+		rectangle(_col * 80, 800 - (_lp - 1) * 40, _col * 80 + 80, 800 - (_lp - 1) * 40 + 20);
 	}
 
 	int pop()
@@ -56,6 +107,11 @@ public:
 		
 		int val = top->val;
 		top = n_top;
+
+		cover(col, last_placed);
+
+		last_placed--;
+
 		return val;
 	}
 
@@ -70,7 +126,9 @@ public:
 		for (int i = 0; i < size; i++)
 		{
 			push(get_random_in_range(0,0));
+			Sleep(TIME_DELTA);
 		}
+
 	}
 
 	void print()
@@ -81,6 +139,7 @@ public:
 			printf("%d\n", tmp->val);
 			tmp = tmp->prev;
 		}
+		printf("\n");
 	}
 
 };
@@ -89,6 +148,7 @@ void exchange(stack* st1, stack* st2)
 {
 	if (st1->is_empty() && st2->is_empty())
 		return;
+
 	int is_valid1 = 0;
 	int is_valid2 = 0;
 
@@ -97,44 +157,91 @@ void exchange(stack* st1, stack* st2)
 	if (!st1->is_empty())
 	{
 		val1 = st1->pop();
+
+		is_valid1 = 1;
+		st1->cover(st1->col + 1, 1);
+		st1->draw_stack_elem(st1->col + 1, 0, val1, 12);
 	}
+
+	Sleep(TIME_DELTA);
 	if (!st2->is_empty())
 	{
 		val2 = st2->pop();
+		//Sleep(1500);
+		is_valid2 = 1;
+		st2->cover(st2->col - 1, 1);
+		st2->draw_stack_elem(st2->col - 1, 0, val2, 12); // next to
 	}
 
+	Sleep(TIME_DELTA);
 	exchange(st1, st2);
-
-	if (is_valid1)
-		st1->push(val2);
+	Sleep(TIME_DELTA);
 
 	if (is_valid2)
-		st1->push(val1);
-	return;
+	{
+		st2->cover(st2->col - 1, 1);
+		st2->draw_stack_elem(st2->col - 1, 0, val2, 12); // next to
+	}
+	if (is_valid1)
+	{
+		st1->cover(st1->col + 1, 1);
+		st1->draw_stack_elem(st1->col + 1, 0, val1, 12);
+	}
+
+	if (is_valid2)
+	{
+		Sleep(TIME_DELTA);
+		st1->push(val2);	
+	}
+	
+	if (is_valid1)
+	{
+		Sleep(TIME_DELTA);
+		st2->push(val1);		
+	}
+}
+
+void draw_exchange(stack* st1, stack* st2)
+{
+	exchange(st1, st2);
+	st1->cover(st1->col + 1, 1);
+	st2->cover(st2->col - 1, 1);
 
 }
 
 int main()
 {
 	stack* st1 = new stack;
-
-	int s = 0;
-	printf("size1^ ");
-	scanf("%d", &s);
-	st1->random_fill(s);
-	st1->print();
-
+	st1->col = 2;
 	stack* st2 = new stack;
+	st2->col = 5;
 
-	printf("size2^ ");
-	scanf("%d", &s);
-	st2->random_fill(s);
-	st2->print();
+	int s1 = 0;
+	int s2 = 0;
 
-	exchange(st1, st2);
+	printf("size1 ");
+	scanf("%d", &s1);
+
+	printf("size2 ");
+	scanf("%d", &s2);
+
+
+	initwindow(1000, 1000);
+
+	st1->random_fill(s1);	
 	st1->print();
+
+	st2->random_fill(s2);
 	st2->print();
 
+	draw_exchange(st1, st2);
+
+	st1->print();
+	
+	st2->print();
+
+	getch();
+	closegraph();
 	return 0;
 }
 
