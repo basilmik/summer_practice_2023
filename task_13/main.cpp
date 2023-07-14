@@ -270,7 +270,6 @@ class sys
 			t_task->type = t_st;
 			t_task->draw(11, 8);
 		}
-
 	}
 
 	int plan()
