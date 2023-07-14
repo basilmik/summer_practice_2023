@@ -4,9 +4,13 @@
 #include <stdlib.h>
 #include <windows.h>
 
+#include "../libwinbgi/src/graphics.h"
+
 #define ALL_EMPTY 0
 #define NOT_ALL_EMPTY 1
-
+#define X0 20
+#define Y0 20
+#define RAD 20
 class task
 {
 public:
@@ -22,6 +26,37 @@ public:
 	task(int _type)
 	{
 		type = _type;
+	}
+
+	void draw_line(int x, int y, int clr)
+	{
+		setcolor(clr);
+		
+		switch (type)
+		{
+		case 0:
+
+			circle(x + RAD, y + RAD, RAD + 5);
+			break;
+		case 1:
+			rectangle(x, y, x + RAD * 2, y + RAD * 2);
+			break;
+		case 2:
+			rectangle(x, y+ 5, x + RAD * 2 + 10, y + RAD * 2 - 10);
+			break;
+		}
+	}
+
+	void draw(int c, int r)
+	{
+		printf("c %d r  %d\n", c, r);
+		int x = c * 70 + X0 ;
+		int y = r * 70 + Y0 ;
+		draw_line(x,y, type + 1);
+
+		setfillstyle(SOLID_FILL, type + 5);
+		floodfill(x + 25, y + 25, type + 1);
+		draw_line(x, y, type + 5);
 	}
 };
 
@@ -74,6 +109,25 @@ public:
 		printf("\n");
 	}
 
+	void draw()
+	{
+		int c = 0;
+		int r = 0;
+
+		task* tmp = top_task;
+		while (tmp != nullptr)
+		{
+			tmp->draw(c, r);
+			c++;
+			if (c == 10)
+			{
+				c = 0;
+				r++;
+			}
+			tmp = tmp->next;
+		}
+	}
+
 };
 
 class queue
@@ -88,7 +142,6 @@ public:
 		top_task = nullptr;
 		last_task = nullptr;
 		size = 0;
-
 	}
 
 
@@ -135,6 +188,25 @@ public:
 
 	}
 
+	void draw()
+	{
+		int c = 0;
+		int r = 0;
+
+		task* tmp = top_task;
+		while (tmp != nullptr)
+		{
+			tmp->draw(c, r);
+			c++;
+			if (c == 10)
+			{
+				c = 0;
+				r++;
+			}
+			tmp = tmp->next;
+		}
+	}
+
 	bool is_empty()
 	{
 		return (size == 0);
@@ -149,6 +221,9 @@ public:
 
 	stack* st;
 	queue* qu;
+
+	int t;
+	int t_st;
 
 	sys()
 	{
@@ -184,8 +259,8 @@ public:
 			return ALL_EMPTY;
 
 
-		int t = qu->get();
-		int t_st = -1;
+		t = qu->get();
+		t_st = -1;
 
 		if (t == -1) // qu is empty
 		{
@@ -228,11 +303,18 @@ public:
 		printf("-----------------------\n");
 	}
 
+	void draw_stats()
+	{
+		qu->draw();
+
+	}
+
 
 	void emulate()
 	{
 		do
 		{
+			
 			print_stats();
 			Sleep(2500);
 		} while (plan() != ALL_EMPTY);
@@ -252,9 +334,14 @@ int main()
 		if (t != -1)
 			msys->qu->add(t);
 	}
+initwindow(1000, 700);
+msys->qu->draw();
+getch();
 
 	msys->print_all();
+	
 	msys->emulate();
-
+	getch();
+	closegraph();
 	return 0;
 }
