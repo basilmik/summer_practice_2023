@@ -9,7 +9,7 @@
 #define X0 300
 #define Y0 300
 #define RAD 300
-#define MAX_VERTX_NUM 5
+#define MAX_VERTX_NUM 7
 
 int get_random_in_range(int low, int up)
 {
@@ -66,50 +66,86 @@ public:
         setcolor(LIGHTCYAN);
 
         for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
+        {       for (int j = 0; j < N; j++)
             {
                 int val = arr[i][j];
+                //printf("[%d][%d] %d ", i, j, val);
                 if (val == 1)
                 {
                     line(map[i * 2 + 0], map[i * 2 + 1],
                         map[j * 2 + 0], map[j * 2 + 1]);
                 }
             }
+        //printf("\n");
+        }
+        //Sleep(5);
     }
 
     void draw_m_graph(int a[][MAX_VERTX_NUM])
     {
-       
-        draw_connect(a);
         drav_points();
         Sleep(5);
     }
 
-};
-
-int mmin(int a, int b)
-{
-    return (a > b) ? b : a;
-}
+}; 
 
 
 int main()
 {
     srand(time(0));
+    initwindow(1000, 700);
+    clearviewport();
     int N;
     N = get_random_in_range(4, MAX_VERTX_NUM);
 
     int A[MAX_VERTX_NUM][MAX_VERTX_NUM] = {};
 
     // Ввод матрицы смежности
+    for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++)
+        {
+            int v = get_random_in_range(0, 1);            
+            if (i == j)
+                v = 0;
+            A[i][j] = v;
+            A[j][i] = v;
+        }
+
+    graph* g = new graph;
+    g->N = N;
+    g->init_map();
+
+
+    for (int i = 0; i < N; i++)
+    {
+        int sum = 0;
+        for (int j = 0; j < N; j++)
+        {
+            sum += A[i][j];
+        }
+        //printf("[%d] sum = %d\n", i, sum);
+        if (sum == 0)
+        {
+            int rand_j = get_random_in_range(0, N - 1);
+            //printf("rand j = %d\n", rand_j);
+            A[i][rand_j] = 1;
+            A[rand_j][i] = 1;
+        }
+    }
+
+    g->draw_connect(A);
+
     for (int i = 0; i < N; ++i)
         for (int j = 0; j < N; ++j)
         {
-            A[i][j] = get_random_in_range(0, 1);
-
-            if (A[i][j] == 0)
-                A[i][j] = MAX;
+            int v = A[i][j];
+            if (v == 0)
+                v = MAX;
+            A[i][j] = v;
+            A[j][i] = v;
         }
+
+
 
     // Алгоритм Флойда-Уоршелла
     for (int k = 0; k < N; ++k)
@@ -117,6 +153,13 @@ int main()
             for (int j = 0; j < N; ++j)
                 A[i][j] = min(A[i][j], A[i][k] + A[k][j]);
     
+    //for (int i = 0; i < N; i++)
+    //    for (int j = 0; j < N; j++)
+    //    {
+    //        printf("[%d][%d] %d\n", i, j, A[i][j]);
+    //        
+    //    }
+
     int V_min = 0;
 
     // Ищем вершину с минимальной суммой
@@ -134,16 +177,13 @@ int main()
             V_min = i;
         }
     }
-    //V_min++;
-    printf("%d", V_min);
-    graph* g = new graph;
-    g->N = N;
+
     g->target_vertex = V_min;
-    g->init_map();
-    initwindow(1000, 700);
-    clearviewport();
+    
     g->draw_m_graph(A);
+
+    printf("%d", V_min);
+
     getch();
     closegraph();
-    //std::cout << V_min // вывод города с минимальным расстоянием ( нумерация с 0 )
 }
