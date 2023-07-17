@@ -115,7 +115,7 @@ int main()
     g->N = N;
     g->init_map();
 
-
+    // so there are no not connected vertexs
     for (int i = 0; i < N; i++)
     {
         int sum = 0;
@@ -123,11 +123,9 @@ int main()
         {
             sum += A[i][j];
         }
-        //printf("[%d] sum = %d\n", i, sum);
         if (sum == 0)
         {
             int rand_j = get_random_in_range(0, N - 1);
-            //printf("rand j = %d\n", rand_j);
             A[i][rand_j] = 1;
             A[rand_j][i] = 1;
         }
