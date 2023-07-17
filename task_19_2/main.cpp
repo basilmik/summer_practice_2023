@@ -1,7 +1,15 @@
 #include "stdio.h"
 #include <stack>
+#include <stdlib.h>
+#include <time.h>
+#include "../libwinbgi/src/graphics.h"
 
-#define MAX_VERTX 7
+#define MAX_VERTX 8
+#define X0 320
+#define Y0 320
+#define RAD 100
+#define X 0
+#define Y 1
 
 using namespace std;
 
@@ -26,6 +34,22 @@ class graph
 		}
 	}
 
+	void drawStack(stack<int>* _ptr, int prev)
+	{
+		setcolor(BLUE);
+		int v = 0;
+		if (!_ptr->empty())
+		{
+			v = _ptr->top();
+			_ptr->pop();
+			drawStack(_ptr, v);
+			line(map[v][X], map[v][Y], map[prev][X], map[prev][Y]);
+
+			_ptr->push(v);
+		}
+
+	}
+
 	void findPath(int _idx)
 	{
 		pathStack.push(_idx);
@@ -42,7 +66,7 @@ class graph
 			if (_idx == pointC)
 				targetFlag = true;
 
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < N; i++)
 			{
 				if (edge[_idx][i])
 				{
@@ -54,6 +78,45 @@ class graph
 			}
 
 		}
+	}
+
+
+
+public:
+
+
+	int** edge;
+	graph()
+	{
+		targetFlag = false;
+		createEdges();
+
+		pointA = getRandom(0, N -1);
+		pointB = pointA;
+		while (pointB == pointA)
+			pointB = getRandom(0, N - 1);
+		
+		pointC = pointA;
+		while (pointC == pointA || pointC == pointB)
+			pointC = getRandom(0, N -1);
+		
+	}
+
+	int pointA;
+	int pointB;
+	int pointC;
+	int N;
+
+	stack<int> pathStack;
+	stack<stack<int>> allPaths;
+	bool targetFlag;
+
+	int getRandom(int low, int up)
+	{
+		if (up == 0 && low == 0)
+			return rand();
+		else
+			return ((rand() % (up - low + 1)) + low);
 	}
 
 	void printShortest()
@@ -71,82 +134,85 @@ class graph
 
 			allPaths.pop();
 		}
-
+		getch();
+		drawStack(&tmpPtr, pointA);
+		printf("path: ");
 		print(&tmpPtr);
 		printf("\n");
 	}
-
-public:
-	int edge[6][6] = { 0 };
-
-	graph()
-	{
-		targetFlag = false;
-		pointA = 0;
-		pointC = 0;
-		pointB = 0;
-		edge[0][0] = 0;
-		edge[0][1] = 1;
-		edge[0][2] = 1;
-		edge[0][3] = 0;
-		edge[0][4] = 0;
-		edge[0][5] = 0;
-
-		edge[1][0] = 1;
-		edge[1][1] = 0;
-		edge[1][2] = 1;
-		edge[1][3] = 1;
-		edge[1][4] = 1;
-		edge[1][5] = 0;
-
-
-		edge[2][0] = 1;
-		edge[2][1] = 1;
-		edge[2][2] = 0;
-		edge[2][3] = 0;
-		edge[2][4] = 1;
-		edge[2][5] = 1;
-
-
-		edge[3][0] = 0;
-		edge[3][1] = 1;
-		edge[3][2] = 0;
-		edge[3][3] = 0;
-		edge[3][4] = 1;
-		edge[3][5] = 0;
-
-
-		edge[4][0] = 0;
-		edge[4][1] = 1;
-		edge[4][2] = 1;
-		edge[4][3] = 1;
-		edge[4][4] = 0;
-		edge[4][5] = 1;
-
-		edge[5][0] = 0;
-		edge[5][1] = 0;
-		edge[5][2] = 1;
-		edge[5][3] = 0;
-		edge[5][4] = 1;
-		edge[5][5] = 0;
-
-	}
-
-	int pointA;
-	int pointB;
-	int pointC;
-
-	stack<int> pathStack;
-	stack<stack<int>> allPaths;
-	bool targetFlag;
-
-
-
 	void search()
 	{
 		findPath(pointA);
-		printShortest();	
 	}
+
+	void createEdges()
+	{
+		srand(time(0));
+
+		N = getRandom(5, MAX_VERTX);
+
+		edge = new int* [N];
+		for (int i = 0; i < N; ++i)
+			edge[i] = new int[N];
+
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < N; j++)
+			{
+				setValueByIdx(i, j, (i == j) ? 0 : getRandom(0, 1));
+			}
+		}
+	}
+
+
+	float** map;
+	int createMap()
+	{
+		map = new float* [N];
+		for (int i = 0; i < N; ++i)
+			map[i] = new float[N];
+
+		double deg_delta = 360.0 / (double)N;
+		double alpha = 0;
+
+		for (int i = 0; i < N; ++i)
+		{
+			map[i][0] = X0 + RAD * cos(alpha * 0.017);
+			map[i][1] = Y0 + RAD * sin(alpha * 0.017);
+			alpha += deg_delta;
+		}
+
+		return 0;
+	}
+
+	void dPoints()
+	{
+		for (int i = 0; i < N; i++)
+		{
+			char message[4];
+			setcolor(WHITE);
+			sprintf_s(message, "%d", i);
+			outtextxy(map[i][0], map[i][1], message);
+		}
+	}
+
+	void dEdges()
+	{
+		setcolor(RED);
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++)	
+				if (edge[i][j])			
+					line(map[i][0], map[i][1], map[j][0], map[j][1]);
+	}
+
+	void draw()
+	{
+		createMap();
+		dEdges();
+		dPoints();
+
+	}
+
 
 };
 
@@ -156,10 +222,15 @@ int main()
 {
 
 	graph* g = new graph;
-	g->pointA = 0;
-	g->pointC = 3;
-	g->pointB = 4;
-	g->search();
+	printf("A: %d C: %d B: %d\n", g->pointA, g->pointC, g->pointB);
 
+	g->search();
+	initwindow(700, 700);
+	clearviewport();
+
+	g->draw();
+	g->printShortest();
+	getch();
+	closegraph();
 	return 0;
 }
