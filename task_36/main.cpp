@@ -3,7 +3,7 @@
 
 #define BUF_SIZE_MAX 5
 #define MAX_ASK BUF_SIZE_MAX - 1
-
+#define DOT_PLACE 3
 class number
 {
 public:
@@ -18,7 +18,6 @@ public:
 			w[i] = 0;
 	};
 
-
 	number(bool s, int w0, int w1, int w2, int w3, int w4)
 	{
 		sign = s;
@@ -29,7 +28,6 @@ public:
 		w[2] = w2;
 		w[3] = w3;
 		w[4] = w4;
-		//print();
 	}
 
 	bool is_zero()
@@ -41,8 +39,6 @@ public:
 		}
 		return true;
 	}
-
-
 
 	// this > that
 	bool operator > (const number& ptr) const
@@ -168,9 +164,8 @@ public:
 		else
 			printf("-");
 		for (int i = 0; i < 2; i++) printf("%d", w[i]);
-		printf(".");
+			printf(".");
 		for (int i = 2; i < 5; i++) printf("%d", w[i]);
-
 	}
 
 	number dev_by_2()
@@ -205,15 +200,12 @@ public:
 		number res;
 		number* tmp = cpy(*this);
 		
-		bool flag_hit_2 = false;
 		int delta = 0;
 		for (int j = MAX_ASK; j >= 0; j--)
 		{
 			for (int i = MAX_ASK; i >= 0; i--)
 			{
-				
 				int idx = j - (MAX_ASK - i);
-				
 				idx += delta;
 				
 				int s = tmp->w[i] * tmp->w[j];
@@ -232,46 +224,25 @@ public:
 					if (s / 10 && (idx) != 0)
 					{
 						res.w[idx - 1] += dev;
-
 					}
-				}
-
-				
+				}			
 			}
 			
-			if (delta < 3)
+			if (delta < DOT_PLACE)
 			{
-				delta++;
-				
-				res.move_for_1();
-				
+				delta++;				
+				res.move_for_1();				
 			}
 		}
 		
 		res.sign = false;
 		return res;
-
 	}
-
-	number calc()
-	{
-		number res;
-		number five(false, 0, 5, 0, 0, 0);
-
-		res = square();
-		res.print();
-		res = res - five;
-
-		return res;
-	}
-
-
 };
 
 
 int main()
-{
-	
+{	
 	number min(false, 0, 2, 0, 0, 0);
 	number max(false, 0, 3, 0, 0, 0);
 	number zero(false, 0, 0, 0, 0, 0);
