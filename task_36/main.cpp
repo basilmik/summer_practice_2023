@@ -1,37 +1,42 @@
 #include "stdio.h"
 #include "math.h"
 
+#define BUF_SIZE_MAX 5
+#define MAX_ASK BUF_SIZE_MAX - 1
+
 class number
 {
 public:
 	// sign 01.234
 	bool sign;
-	int w[5];
+	int w[BUF_SIZE_MAX];
 
 	number()
 	{
+		move_idx = 0;
 		sign = false;
-		w[0] = 0;
-		w[1] = 0;
-		w[2] = 0;
-		w[3] = 0;
-		w[4] = 0;
+		for (int i = 0; i < BUF_SIZE_MAX; i++)
+			w[i] = 0;
 	};
 
 
 	number(bool s, int w0, int w1, int w2, int w3, int w4)
 	{
+		move_idx = 0;
 		sign = s;
+		for (int i = 0; i < BUF_SIZE_MAX; i++)
+			w[i] = 0;
 		w[0] = w0;
 		w[1] = w1;
 		w[2] = w2;
 		w[3] = w3;
 		w[4] = w4;
+		print();
 	}
 
 	bool is_zero()
 	{
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < BUF_SIZE_MAX; i++)
 		{
 			if (w[i] != 0)
 				return false;
@@ -56,7 +61,7 @@ public:
 		}
 
 		bool res = false;
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < BUF_SIZE_MAX; i++)
 		{
 			if (this->w[i] >= ptr.w[i])
 				res = true;
@@ -85,7 +90,7 @@ public:
 		number* tmp_max = cpy(*max);
 		number* tmp_min = cpy(*min);
 
-		for (int i = 4; i >= 0; i--)
+		for (int i = MAX_ASK; i >= 0; i--)
 		{
 			// can substract
 			if (tmp_max->w[i] >= tmp_min->w[i])
@@ -123,7 +128,7 @@ public:
 	{
 		number res;
 		
-		for (int i = 4; i >= 0; i--)
+		for (int i = MAX_ASK; i >= 0; i--)
 		{
 			int sum = w[i] + ptr.w[i] + res.w[i];
 			res.w[i] = sum % 10 ;
@@ -155,13 +160,14 @@ public:
 
 	void print()
 	{
-		if (sign)
-			printf("-");
-		else
-			printf("+");
+
 		for (int i = 0; i < 2; i++) printf("%d", w[i]);
 		printf(".");
 		for (int i = 2; i < 5; i++) printf("%d", w[i]);
+
+		//for (int i = 0; i < BUF_SIZE_MAX; i++)
+		//	//printf("%d] %d\n", i, w[i]);
+		//	printf("%d", w[i]);
 		printf("\n");
 	}
 
@@ -169,10 +175,10 @@ public:
 	{
 		number res;
 
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < BUF_SIZE_MAX; i++)
 		{
 			res.w[i] += w[i] / 2;
-			if (w[i] % 2 && i != 4)
+			if (w[i] % 2 && i != MAX_ASK)
 			{	
 				res.w[i + 1] += 5;
 			}
@@ -186,64 +192,146 @@ public:
 		move_idx = 0;
 		if (is_zero())
 			return;
-		while (w[4] == 0)
+
+		//int tmp = 100 * w[2] + 10 * w[3] + w[4];
+		//if (w[3] == 0 && w[4] == 0)
+		//	tmp /= 100;
+		//else
+		//if (w[4] == 0)
+		//	tmp /= 10;
+		//
+
+		//if (tmp >= 100)
+		//	move_idx = 6;
+		//else
+		//	if (tmp >= 10)
+		//		move_idx = 4;
+		//	else
+		//		if (tmp != 0)
+		//			move_idx = 2;
+
+
+		while (w[MAX_ASK] == 0)
 		{
-			for (int i = 4; i > 0; i--)
+			for (int i = MAX_ASK; i > 0; i--)
 			{
 				
 				w[i] = w[i - 1];
 			}
-			move_idx++;
+			//move_idx++;
 		}
+
+
 	}
 
-	void move_left()
+	void move_left(int idx)
 	{
 		if (is_zero())
 			return;
-		while (move_idx)
+		int v = idx;
+		for (int i = 0; i < MAX_ASK; i++)
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				
+			w[i] = w[i + 1];
+		}
+		w[MAX_ASK] = 0;
+		/*while (v)
+		{
+			for (int i = 0; i < MAX_ASK; i++)
+			{	
 				w[i] = w[i + 1];
 			}
-			move_idx--;
-		}
+			w[MAX_ASK] = 0;
+			print();
+			v--;
+		}*/
 	}
 
-
+	void move_for_3()
+	{
+		for(int j = 0; j <3; j++)
+		{
+			for (int i = MAX_ASK; i > 0; i--)
+			{
+				w[i] = w[i - 1];
+			}
+		}
+	}
+	void move_for_1()
+	{
+		
+			for (int i = MAX_ASK; i > 0; i--)
+			{
+				w[i] = w[i - 1];
+			}
+			w[0] = 0;
+	}
 
 	number square()
 	{
 		number res;
 		number* tmp = cpy(*this);
-		tmp->move_right();
-		for (int j = 4; j >= 0; j--)
-		{		
-			for (int i = 4; i >= 0; i--)
+		//tmp->move_right();
+		tmp->print();
+		bool flag_hit_2 = false;
+		int delta = 0;
+		for (int j = MAX_ASK; j >= 0; j--)
+		{
+			for (int i = MAX_ASK; i >= 0; i--)
 			{
 				//printf("i: %d j: %d\n", i, j);
-				int idx = j - (4 - i);
+				int idx = j - (MAX_ASK - i);
+				/*if (j == 2 && i == 4 && flag_hit_2 == false)
+				{
+					flag_hit_2 = true;
+					res.print();
+					res.move_for_3();
+					res.print();
+					printf("MOVE\n");
+				}
+				if (idx < 2 && flag_hit_2)
+				{
+					idx += 3;
+				}*/
+				idx += delta;
 				//printf(" j - (4 - i)  %d - (4 - %d) =  %d\n", j, i, idx);
-				
+
 				int s = tmp->w[i] * tmp->w[j];
 				int proc = s % 10;
 				int dev = s / 10;
-				//printf("s: %d  proc: %d  dev: %d\n", s, proc, dev);
-				
+				printf("s: %d  proc: %d  dev: %d\n", s, proc, dev);
+
 				if (idx >= 0)
 				{
-					res.w[j - (4 - i)] += proc;
-					if (s / 10 && (j - (4 - i)) != 0)
+					res.w[idx] += proc;
+					int v = res.w[idx];
+					if (v >= 10)
 					{
-						res.w[j - (4 - i) - 1] += dev;
+						res.w[idx] = v % 10;
+						res.w[idx - 1] += v / 10;
+					}
+					if (s / 10 && (idx) != 0)
+					{
+						res.w[idx - 1] += dev;
+
 					}
 				}
-				//res.print();
+
+				res.print();
+			}
+			printf("%d done\n", j);
+			res.print();
+			if (delta < 3)
+			{
+				delta++;
+				printf("MOVE\n");
+
+				res.move_for_1();
+				res.print();
 			}
 		}
-		tmp->move_left();
+		//res.print();
+		//res.move_left(tmp->move_idx);
+		res.print();
 		res.sign = false;
 		return res;
 
@@ -272,15 +360,16 @@ float calc(float _t)
 
 int main()
 {
-	number t(false, 0, 0, 2, 2, 5);
-	number r =t.square();
-	r.print();
+	//number t(false, 0, 0, 2, 2, 5);
+	//number r =t.square();
+	//r.print();
 
 	number min(false, 0, 2, 0, 0, 0);
 	number max(false, 0, 3, 0, 0, 0);
 	number eps(false, 0, 0, 0, 0, 1);
 	number calc_res;
 	number target;
+	number five(false, 0, 5, 0, 0, 0);
 
 	while (true)
 	{
@@ -294,15 +383,18 @@ int main()
 		target = target.dev_by_2();
 		//target.print();
 		target = target + min;
-		printf("try: ");
+		printf("mid: ");
 		target.print();
 		
+		//target.square();
+		//printf("mid^2: ");
+		//target.print();
 
-		calc_res = target.calc();
-		printf("calc_res: ");
+		calc_res = target.square() - five;
+		printf("mid^2 - 5: ");
 		calc_res.print();
-		printf("target: ");
 		target.print();
+
 		if (calc_res > eps)
 		{
 			min = target;
