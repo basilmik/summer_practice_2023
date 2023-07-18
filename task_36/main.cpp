@@ -13,7 +13,6 @@ public:
 
 	number()
 	{
-		move_idx = 0;
 		sign = false;
 		for (int i = 0; i < BUF_SIZE_MAX; i++)
 			w[i] = 0;
@@ -22,7 +21,6 @@ public:
 
 	number(bool s, int w0, int w1, int w2, int w3, int w4)
 	{
-		move_idx = 0;
 		sign = s;
 		for (int i = 0; i < BUF_SIZE_MAX; i++)
 			w[i] = 0;
@@ -31,7 +29,7 @@ public:
 		w[2] = w2;
 		w[3] = w3;
 		w[4] = w4;
-		print();
+		//print();
 	}
 
 	bool is_zero()
@@ -64,13 +62,19 @@ public:
 		for (int i = 0; i < BUF_SIZE_MAX; i++)
 		{
 			if (this->w[i] >= ptr.w[i])
+			{
 				res = true;
+				if (ptr.w[i]!=0)
+				break;
+			}
 			else
 			{
 				res = false;
+				if (ptr.w[i] != 0)
 				break;
 			}
 		}
+
 		if (this->sign == false)
 			return res;
 		else
@@ -134,7 +138,7 @@ public:
 			res.w[i] = sum % 10 ;
 			if (i != 0)
 			{
-				res.w[i] += sum / 10;
+				res.w[i - 1] += sum / 10;
 			}
 		}
 
@@ -160,15 +164,13 @@ public:
 
 	void print()
 	{
-
+		if (!sign) printf("+");
+		else
+			printf("-");
 		for (int i = 0; i < 2; i++) printf("%d", w[i]);
 		printf(".");
 		for (int i = 2; i < 5; i++) printf("%d", w[i]);
 
-		//for (int i = 0; i < BUF_SIZE_MAX; i++)
-		//	//printf("%d] %d\n", i, w[i]);
-		//	printf("%d", w[i]);
-		printf("\n");
 	}
 
 	number dev_by_2()
@@ -186,120 +188,38 @@ public:
 		return res;
 	}
 
-	int move_idx;
-	void move_right()
-	{
-		move_idx = 0;
-		if (is_zero())
-			return;
 
-		//int tmp = 100 * w[2] + 10 * w[3] + w[4];
-		//if (w[3] == 0 && w[4] == 0)
-		//	tmp /= 100;
-		//else
-		//if (w[4] == 0)
-		//	tmp /= 10;
-		//
-
-		//if (tmp >= 100)
-		//	move_idx = 6;
-		//else
-		//	if (tmp >= 10)
-		//		move_idx = 4;
-		//	else
-		//		if (tmp != 0)
-		//			move_idx = 2;
-
-
-		while (w[MAX_ASK] == 0)
-		{
-			for (int i = MAX_ASK; i > 0; i--)
-			{
-				
-				w[i] = w[i - 1];
-			}
-			//move_idx++;
-		}
-
-
-	}
-
-	void move_left(int idx)
-	{
-		if (is_zero())
-			return;
-		int v = idx;
-		for (int i = 0; i < MAX_ASK; i++)
-		{
-			w[i] = w[i + 1];
-		}
-		w[MAX_ASK] = 0;
-		/*while (v)
-		{
-			for (int i = 0; i < MAX_ASK; i++)
-			{	
-				w[i] = w[i + 1];
-			}
-			w[MAX_ASK] = 0;
-			print();
-			v--;
-		}*/
-	}
-
-	void move_for_3()
-	{
-		for(int j = 0; j <3; j++)
-		{
-			for (int i = MAX_ASK; i > 0; i--)
-			{
-				w[i] = w[i - 1];
-			}
-		}
-	}
 	void move_for_1()
 	{
-		
-			for (int i = MAX_ASK; i > 0; i--)
-			{
-				w[i] = w[i - 1];
-			}
-			w[0] = 0;
+		if (w[MAX_ASK] >= 5)
+			w[MAX_ASK - 1] ++;
+		for (int i = MAX_ASK; i > 0; i--)
+		{
+			w[i] = w[i - 1];
+		}
+		w[0] = 0;
 	}
 
 	number square()
 	{
 		number res;
 		number* tmp = cpy(*this);
-		//tmp->move_right();
-		tmp->print();
+		
 		bool flag_hit_2 = false;
 		int delta = 0;
 		for (int j = MAX_ASK; j >= 0; j--)
 		{
 			for (int i = MAX_ASK; i >= 0; i--)
 			{
-				//printf("i: %d j: %d\n", i, j);
+				
 				int idx = j - (MAX_ASK - i);
-				/*if (j == 2 && i == 4 && flag_hit_2 == false)
-				{
-					flag_hit_2 = true;
-					res.print();
-					res.move_for_3();
-					res.print();
-					printf("MOVE\n");
-				}
-				if (idx < 2 && flag_hit_2)
-				{
-					idx += 3;
-				}*/
+				
 				idx += delta;
-				//printf(" j - (4 - i)  %d - (4 - %d) =  %d\n", j, i, idx);
-
+				
 				int s = tmp->w[i] * tmp->w[j];
 				int proc = s % 10;
 				int dev = s / 10;
-				printf("s: %d  proc: %d  dev: %d\n", s, proc, dev);
-
+				
 				if (idx >= 0)
 				{
 					res.w[idx] += proc;
@@ -316,22 +236,18 @@ public:
 					}
 				}
 
-				res.print();
+				
 			}
-			printf("%d done\n", j);
-			res.print();
+			
 			if (delta < 3)
 			{
 				delta++;
-				printf("MOVE\n");
-
+				
 				res.move_for_1();
-				res.print();
+				
 			}
 		}
-		//res.print();
-		//res.move_left(tmp->move_idx);
-		res.print();
+		
 		res.sign = false;
 		return res;
 
@@ -353,85 +269,49 @@ public:
 };
 
 
-float calc(float _t)
-{
-	return (_t * _t - 5.0);
-}
-
 int main()
 {
-	//number t(false, 0, 0, 2, 2, 5);
-	//number r =t.square();
-	//r.print();
-
+	
 	number min(false, 0, 2, 0, 0, 0);
 	number max(false, 0, 3, 0, 0, 0);
-	number eps(false, 0, 0, 0, 0, 1);
+	number zero(false, 0, 0, 0, 0, 0);
 	number calc_res;
 	number target;
 	number five(false, 0, 5, 0, 0, 0);
 
+	bool flag = false;
+	printf("     :  max    --  min\n");
+
 	while (true)
-	{
-		target = (max - min);
-		printf("max: ");
+	{		
+		printf("serch: ");
 		max.print();
-		printf("min: ");
-		min.print();
-		
-		//target.print();
+		printf(" -- ");
+		min.print(); 
+		printf("\n");
+
+		target = (max - min);
+
 		target = target.dev_by_2();
-		//target.print();
 		target = target + min;
-		printf("mid: ");
-		target.print();
-		
-		//target.square();
-		//printf("mid^2: ");
-		//target.print();
-
+	
 		calc_res = target.square() - five;
-		printf("mid^2 - 5: ");
-		calc_res.print();
-		target.print();
 
-		if (calc_res > eps)
-		{
-			min = target;
-			
-		}
+		if (zero > calc_res)
+			min = target;				
 		else
-		{
 			max = target;
-		}
-
+		
+		if (flag == true)
+			break;
+		if (calc_res.is_zero())
+			flag = true;
 	}
 
-	/*float min = 2;
-	float max = 3;
-	float eps = 0.001;
-	float calc_res = 1;
-	float test = 1;
-
-	do
-	{
-		test = (max - min) / 2.0;
-		test += min;
-
-		calc_res = calc(test);
-		if (calc_res * 1000 > eps * 1000)
-		{
-			max = test;
-		}
-		else
-		{
-			min = test;
-		}
-
-	} while (abs((int)(calc_res*1000) - (int)(eps*1000)) > 0);
-
-	printf("%f\n", test);*/
-
+	printf("\nANSWER is between: ");
+	min.print();
+	printf(" and ");
+	max.print();
+	printf("\n");
 	return 0;
-
 }
