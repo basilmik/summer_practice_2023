@@ -19,7 +19,7 @@ int get_next_start()
 
 int main()
 {
-	int n = 0; //  num of der to travel by
+	int n = 0;
 
 	scanf("%d", &n);
 	getchar();
@@ -47,7 +47,7 @@ int main()
 
 		}
 
-		printf("%d ", (v_count > 0) ? stop_count*2 : 0);
+		printf("%d ", (v_count > 0) ? stop_count * 2 : 0);
 	}
 
 	return 0;

@@ -151,12 +151,6 @@ int main()
             for (int j = 0; j < N; ++j)
                 A[i][j] = min(A[i][j], A[i][k] + A[k][j]);
     
-    //for (int i = 0; i < N; i++)
-    //    for (int j = 0; j < N; j++)
-    //    {
-    //        printf("[%d][%d] %d\n", i, j, A[i][j]);
-    //        
-    //    }
 
     int V_min = 0;
 

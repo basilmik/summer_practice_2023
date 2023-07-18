@@ -1,13 +1,30 @@
 #include "stdio.h"
+#include <stdlib.h>
+#include <time.h>
 #include <stack>
-#define MAX_VERTX 7
+#include "../libwinbgi/src/graphics.h"
+
+#define VMAX 7
 
 // A -> C -> B
 
 class graph
 {
+	int mrand(int a, int b)
+	{
+		return (b == 0 && a == 0) ? rand() : ((rand() % (b - a + 1)) + a);
+	}
+
+
 public:
-	int A[6][6] = { 0 };
+	int** A;
+	int N;
+	int start;
+	int end;
+	int mid;
+
+	std::stack<int> cur_path;
+	bool mid_flag;
 
 	graph()
 	{
@@ -15,59 +32,41 @@ public:
 		start = 0;
 		mid = 0;
 		end = 0;
-		A[0][0] = 0;
-		A[0][1] = 1;
-		A[0][2] = 1;
-		A[0][3] = 0;
-		A[0][4] = 0;
-		A[0][5] = 0;
 
-		A[1][0] = 1;
-		A[1][1] = 0;
-		A[1][2] = 1;
-		A[1][3] = 1;
-		A[1][4] = 1;
-		A[1][5] = 0;
+		srand(time(0));
 
+		N = mrand(5, VMAX);
 
-		A[2][0] = 1;
-		A[2][1] = 1;
-		A[2][2] = 0;
-		A[2][3] = 0;
-		A[2][4] = 1;
-		A[2][5] = 1;
+		A = new int* [N];
+		for (int i = 0; i < N; ++i)
+			A[i] = new int[N];
 
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++)
+			{
+				int v = mrand(0, 1);
+				if (i == j) v = 0;
 
-		A[3][0] = 0;
-		A[3][1] = 1;
-		A[3][2] = 0;
-		A[3][3] = 0;
-		A[3][4] = 1;
-		A[3][5] = 0;
+				A[i][j] = v;
+				A[j][i] = v;
+				
+			}
+		
 
-
-		A[4][0] = 0;
-		A[4][1] = 1;
-		A[4][2] = 1;
-		A[4][3] = 1;
-		A[4][4] = 0;
-		A[4][5] = 1;
-
-		A[5][0] = 0;
-		A[5][1] = 0;
-		A[5][2] = 1;
-		A[5][3] = 0;
-		A[5][4] = 1;
-		A[5][5] = 0;
-
+		start = mrand(0, N - 1);
+		mid = mrand(0, N - 1);
+		while (start == mid)
+		{
+			mid = mrand(0, N - 1);
+		}
+		end = mrand(0, N - 1);
+		while (end == mid || mid == start)
+		{
+			end = mrand(0, N - 1);
+		}
 	}
 
-	int start;
-	int end;
-	int mid;
 
-	std::stack<int> cur_path;
-	bool mid_flag;
 
 	int search(int cur)
 	{
@@ -76,22 +75,18 @@ public:
 		if (cur == end)
 		{
 			if (mid_flag)
-			{
-				print();
-				printf("\n");
-				//return 0;
-			}
+				return 1;
+			
 			mid_flag = false;
 			return 0;
 		}
 		else
 		{
 			if (cur == mid)
-			{
 				mid_flag = true;
-			}
+			
 
-			for (int j = 0; j < 6; j++)
+			for (int j = 0; j < N; j++)
 			{
 				if (A[cur][j])
 				{
@@ -99,8 +94,11 @@ public:
 					A[j][cur] = 0;
 					
 					if (search(j) == 1)
+					{
+						A[cur][j] = 1;
+						A[j][cur] = 1;
 						return 1;
-
+					}
 					A[cur][j] = 1;
 					A[j][cur] = 1;
 					cur_path.pop();
@@ -110,15 +108,18 @@ public:
 		}
 	}
 
-	void print()
+	void print(int x, int y)
 	{
 		int v = 0;
 		if (!cur_path.empty())
 		{
 			v = cur_path.top();
 			cur_path.pop();
-			print();
-			printf("%d ", v);
+			print(x, y + 20);
+			
+			char m[4];
+			sprintf_s(m, "%d", v);
+			outtextxy(x, y, m);
 			cur_path.push(v);
 		}
 	}
@@ -128,12 +129,89 @@ public:
 	void call_search()
 	{
 		search(start);
+
+		
+		mdraw();
+		
+	}
+
+	void mdraw()
+	{
+		initwindow(750, 750);
+		clearviewport();
+		setcolor(LIGHTRED);
+
+		char m[16];
+		sprintf_s(m, "%d->%d->%d", end, mid, start);
+
+		outtextxy(100, 20, m);
+
+		float** map = new float* [N];
+		for (int i = 0; i < N; i++)
+			map[i] = new float[N];
+
+		float del = 360.0 / (float)N;
+		float alpha = 0;
+
+		for (int i = 0; i < N; ++i)
+		{
+			map[i][0] = 200 * cos(alpha * 0.017) + 350;
+			map[i][1] = 200 * sin(alpha * 0.017) + 350;
+
+			alpha += del;
+		}
+		setlinestyle(0, 0, 3);
+
+		setcolor(LIGHTGRAY);
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++)
+				if (A[i][j])
+					line(map[i][0], map[i][1], map[j][0], map[j][1]);
+
+		setcolor(LIGHTGRAY);
+		for (int i = 0; i < N; i++)
+		{
+			char m[4];
+			sprintf_s(m, "%d", i);
+			outtextxy(map[i][0], map[i][1], m);
+		}
+		getch();
+		setlinestyle(DASHED_LINE, 0, 3);
+		setcolor(LIGHTBLUE);
+
 		if (mid_flag)
 		{
-			print();
-			printf("\n");
+			
+			int v = 0;
+			int prev = cur_path.top();
+			int cx = 100;
+			int cy = 40;
+
+			while (!cur_path.empty())
+			{
+				v = cur_path.top();
+				cur_path.pop();
+				char m[4];
+				sprintf_s(m, "%d", v);
+				outtextxy(cx, cy, m);
+				cx += 20;
+				
+
+				line(map[v][0], map[v][1], map[prev][0], map[prev][1]);
+				prev = v;
+			}
 		}
+		else
+		{
+			setcolor(LIGHTRED);
+			outtextxy(100, 40, (char*)"no path was found");
+		}
+		getch();
+		closegraph();
+
+
 	}
+
 
 };
 
@@ -141,11 +219,8 @@ public:
 
 int main()
 {
-	
 	graph* g = new graph;
-	g->start = 0;
-	g->mid = 3;
-	g->end = 4;
+
 	g->call_search();
 
 	return 0;
