@@ -74,7 +74,7 @@ public:
 		{
 			right->printLRC();
 		}
-		printf("%d ", val);
+		printf("%d\n", val);
 	}
 
 
