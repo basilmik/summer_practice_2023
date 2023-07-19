@@ -3,8 +3,7 @@
 #include "stdio.h"
 #include "malloc.h"
 
-int main()
-{
+int main(){
 	int m = 0; // winter length
 	int n = 0; // houses number
 
@@ -15,19 +14,16 @@ int main()
 	int* counter = (int*)calloc(n, sizeof(int));
 	bool* stats = (bool*)calloc(n, sizeof(bool));
 	char c;
-	int li = 0; int ri = 0;
+	int li = 0, ri = 0;
 
-	for (int i = 0; i < m; i++)
-	{
+	for (int i = 0; i < m; i++)	{
 
 		scanf("%c", &c);
 		scanf("%d", &li);
 		scanf("%d", &ri);
 		getchar();
 
-		// change stats
 		for (int j = li -1; j < ri; j++)
-		{
 			switch (c)
 			{
 			case '+':
@@ -39,19 +35,15 @@ int main()
 					stats[j] = false;
 				break;
 			}
-		}
+		
 
 		for (int i = 0; i < n; i++)
-		{
-			if (stats[i] == false) counter[i]++;
-		}
-
+			if (stats[i] == false) 
+				counter[i]++;
 	}
 
 	for (int i = 0; i < n; i++)
-	{
 		printf("%d ", counter[i]);
-	}
-
+	
 	return 0;
 }

@@ -123,8 +123,8 @@ int main(){
 			bunch[i].flag = true;
 	
 
-	printf("resultat: x = %d, y = %d, count = %d", x, y, bunch[0].maxCount + 1);
-	initwindow(900, 900);
+	printf("resultat:\nx = %d\ny = %d\ncount = %d\n\n", x, y, bunch[0].maxCount + 1);
+	initwindow(400, 400);
 
 	for (int i = 0; i < M; i++)	{
 		if (bunch[i].flag)
